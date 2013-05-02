@@ -1,0 +1,6 @@
+[submodule "uboot"]
+	path = uboot
+	url = git@github.com:projectgus/uboot-imx6dongle.git
+[submodule "kernel"]
+	path = kernel
+	url = git@github.com:projectgus/linux-imx.git

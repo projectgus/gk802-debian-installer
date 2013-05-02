@@ -1,0 +1,4 @@
+gk802_debian_installer.img
+build/
+*~
+*.deb

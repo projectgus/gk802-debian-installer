@@ -1,0 +1,30 @@
+# Find /boot/zImage or /zImage and a matching /initrd or /boot/initrd and
+# boot them
+#
+# (or zImage_recovery / initrd_recovery if in recovery mode)
+#
+# Values assumed to be preset by parent uboot - loadaddr, bootsuffix
+
+setenv initaddr 0x12008000;
+# increase this number if your initrd gets bigger than 48Mb(!)
+setenv initrdsz 0x03000000;
+
+# Set correct boot parameters (@ signs get processed by slipstream_kernel.sh script)
+setenv bootargs 'root=@ROOTDEV@ rw @CONSOLE@'
+
+setenv tryboot 'if ext2load mmc ${mmcdev} ${loadaddr} ${path}/zImage${bootsuffix}; then
+       if ext2load mmc ${mmcdev} ${initaddr} ${path}/initrd${bootsuffix}; then
+           bootz ${loadaddr} ${initaddr}:${initrdsz};
+       fi;
+   fi;';
+
+# If partition is dedicated boot partition then files will be in root, otherwise in /boot
+setenv trypaths 'setenv path /boot; run tryboot; setenv path ''; run tryboot;'
+
+setenv mmcdev 1;
+run trypaths;
+
+setenv mmcdev 0;
+run trypaths;
+
+

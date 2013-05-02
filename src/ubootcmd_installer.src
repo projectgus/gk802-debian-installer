@@ -1,0 +1,16 @@
+# Boot the installer initrd
+# Values assumed to be set in parent uboot - mmcdev, loadaddr
+#
+
+# Use serial console if recovery button is down, graphical otherwise
+if test ${recovery} -gt 0; then
+    setenv bootargs root=/dev/ram console=ttymxc3,115200 rw;
+else
+    setenv bootargs root=/dev/ram rw;
+fi;
+
+setenv initaddr 0x12008000;
+ext2load mmc ${mmcdev} ${loadaddr} /zImage;
+ext2load mmc ${mmcdev} ${initaddr} /uInitRdInstaller;
+bootz ${loadaddr} ${initaddr}
+
