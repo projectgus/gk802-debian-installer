@@ -4,16 +4,24 @@ export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabi-
 
 PMAKE=make -j4
+# kernel git revision
 KERNELREV := $(shell cd kernel; git rev-parse --verify --short HEAD)
-DESKTOP_SUFFIX = "-$(KERNELREV)-gk802-desktop"
-DESKTOP_DEB=linux-image*$(DESKTOP_SUFFIX)*.deb
-HEADLESS_SUFFIX = "-$(KERNELREV)-gk802-headless"
-HEADLESS_DEB=linux-image*$(HEADLESS_SUFFIX)*.deb
+# kernel version, ie 3.x.x - usually KERNELREV and KERNELVER are taken together as the revision string, but that is config-dependent...
+KERNELVER := $(shell cd kernel; make kernelversion)
+# Debian kernel revision, increment the final number to add a new revision (this may be a bad way to do this!)
+DEBIAN_REVISION := 1
+
+# $(1) argument is either 'desktop' or 'headless'
+DEB = linux-image-$(KERNELVER)-$(KERNELREV)-gk802-$(1)_$(KERNELVER).$(DEBIAN_REVISION)_armhf.deb
+APPEND_TO_VERSION = "-$(KERNELREV)-gk802-$(1)"
+
+DESKTOP_DEB=$(call DEB,desktop)
+HEADLESS_DEB=$(call DEB,headless)
 
 # Internal environment variables
 IMG=gk802_debian_installer.img
 
-MAKE_KPKG=CONCURRENCY_LEVEL=4 DEB_HOST_ARCH=armhf fakeroot make-kpkg --arch arm --subarch gk802 --initrd --cross-compile arm-linux-gnueabihf-
+MAKE_KPKG=CONCURRENCY_LEVEL=4 DEB_HOST_ARCH=armhf fakeroot make-kpkg --arch arm --subarch gk802 --initrd --cross-compile arm-linux-gnueabihf- --revision $(KERNELVER).$(DEBIAN_REVISION)
 
 all: $(IMG)
 
@@ -42,18 +50,18 @@ $(DESKTOP_DEB): src/config-desktop
 	cp src/config-desktop kernel/.config
 	cd kernel && $(MAKE_KPKG) clean
 	cd kernel && make oldconfig
-	cd kernel && $(MAKE_KPKG) --append-to-version "$(DESKTOP_SUFFIX)" kernel_image
+	cd kernel && $(MAKE_KPKG) --append-to-version $(call APPEND_TO_VERSION,desktop) kernel_image
 
 $(HEADLESS_DEB): src/config-headless
 	cp src/config-headless kernel/.config
 	cd kernel && $(MAKE_KPKG) clean
 	cd kernel && make oldconfig
-	cd kernel && $(MAKE_KPKG) --append-to-version "$(HEADLESS_SUFFIX)" kernel_image
+	cd kernel && $(MAKE_KPKG) --append-to-version $(call APPEND_TO_VERSION,headless) kernel_image
 
 
 # Partition image for the installer disk image
 #
-# Uses a loopback device, so uses sudo for root access
+# Uses a loopback device, so requires sudo for root access
 #
 build/partition.img: build/installer_zImage build/uInitRdInstaller src/ubootcmd_installer.src
 	dd if=/dev/zero of=build/partition.img bs=512 count=96256
@@ -81,7 +89,7 @@ build/uInitRdInstaller: build/initrd.gz
 	mkimage -A arm -O linux -T ramdisk -a 0x11008000 -n "GK802 Debian netinst initrd" -d build/initrd.gz build/uInitRdInstaller
 
 build/initrd.gz: build/installer_root
-	cd build/installer_root && fakeroot find . | cpio -H newc -o | gzip -c > ../initrd.gz
+	cd build/installer_root && find . | fakeroot cpio -H newc -o | gzip -c > ../initrd.gz
 
 # Installer root directory, used as contents of the initrd
 build/installer_root: src/vexpress-initrd.gz uboot/u-boot.imx src/19install_gk802_components $(DESKTOP_DEB) $(HEADLESS_DEB) src/install_kernel.sh src/ubootcmd.src build/desktop_kernel_unpacked/lib/modules
@@ -94,4 +102,5 @@ build/installer_root: src/vexpress-initrd.gz uboot/u-boot.imx src/19install_gk80
 	chmod +x $@/gk802_components/install_kernel.sh
 	cp src/19install_gk802_components $@/usr/lib/finish-install.d/
 	chmod +x $@/usr/lib/finish-install.d/19install_gk802_components
+	touch build/installer_root
 
