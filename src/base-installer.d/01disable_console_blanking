@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# At least with my TV, console blanking and resume seems to sometimes fail and disable
+# the HDMI output. So turn it off for the duration of the install:
+echo -e "\033[9;0]" > /dev/tty0

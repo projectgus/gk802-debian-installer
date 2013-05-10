@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# Prepend ttymxc3 to inittab so we get a tty there (prepend not append
+# because it seems under some circumstances HDMI console can fail to load
+# gdm, get stuck, and init never launches later inittab entries.)
+INITTAB=/target/etc/inittab
+CONTENTS=$(cat $INITTAB)
+echo "T0:23:respawn:/sbin/getty -L ttymxc3 115200 vt100" > $INITTAB
+echo "$CONTENTS" >> $INITTAB

@@ -2,11 +2,12 @@
 # Values assumed to be set in parent uboot - mmcdev, loadaddr
 #
 
-# Use serial console if recovery button is down, graphical otherwise
+# Use serial console for the install if the recovery button is down, graphical otherwise
+# (kernel console goes to both places to help with any problem diagnosis)
 if test ${recovery} -gt 0; then
-    setenv bootargs root=/dev/ram console=ttymxc3,115200 rw;
+    setenv bootargs root=/dev/ram console=tty0 console=ttymxc3,115200  rw;
 else
-    setenv bootargs root=/dev/ram rw;
+    setenv bootargs root=/dev/ram console=ttymxc3,115200 console=tty0 rw;
 fi;
 
 setenv initaddr 0x12008000;

@@ -12,11 +12,9 @@ KERNELVER := $(shell cd kernel; make kernelversion)
 DEBIAN_REVISION := 1
 
 # $(1) argument is either 'desktop' or 'headless'
-DEB = linux-image-$(KERNELVER)-$(KERNELREV)-gk802-$(1)_$(KERNELVER).$(DEBIAN_REVISION)_armhf.deb
-APPEND_TO_VERSION = "-$(KERNELREV)-gk802-$(1)"
-
-DESKTOP_DEB=$(call DEB,desktop)
-HEADLESS_DEB=$(call DEB,headless)
+DEB = linux-image-$(KERNELVER)-$(KERNELREV)-gk802_$(KERNELVER).$(DEBIAN_REVISION)_armhf.deb
+APPEND_TO_VERSION = "-$(KERNELREV)-gk802"
+VMLINUZ = vmlinuz-$(KERNELVER)-$(KERNELREV)-gk802
 
 # Internal environment variables
 IMG=gk802_debian_installer.img
@@ -46,17 +44,10 @@ uboot/include/config.h:
 
 # Kernel package build processes
 
-$(DESKTOP_DEB): src/config-desktop
-	cp src/config-desktop kernel/.config
-	cd kernel && $(MAKE_KPKG) clean
+$(DEB): src/config-server
+	cp src/config-server kernel/.config
 	cd kernel && make oldconfig
-	cd kernel && $(MAKE_KPKG) --append-to-version $(call APPEND_TO_VERSION,desktop) kernel_image
-
-$(HEADLESS_DEB): src/config-headless
-	cp src/config-headless kernel/.config
-	cd kernel && $(MAKE_KPKG) clean
-	cd kernel && make oldconfig
-	cd kernel && $(MAKE_KPKG) --append-to-version $(call APPEND_TO_VERSION,headless) kernel_image
+	cd kernel && $(MAKE_KPKG) --append-to-version $(APPEND_TO_VERSION) kernel_image
 
 
 # Partition image for the installer disk image
@@ -76,12 +67,12 @@ build/partition.img: build/installer_zImage build/uInitRdInstaller src/ubootcmd_
 	sudo losetup -d /dev/loop0
 
 # Extract the installation zImage from the desktop kernel deb
-build/installer_zImage: build/desktop_kernel_unpacked/boot
-	cp build/desktop_kernel_unpacked/boot/vmlinuz* build/installer_zImage
+build/installer_zImage: build/kernel_unpacked/boot
+	cp build/kernel_unpacked/boot/$(VMLINUZ) build/installer_zImage
 
-build/desktop_kernel_unpacked/boot: $(DESKTOP_DEB)
-	mkdir -p build/desktop_kernel_unpacked
-	dpkg -x $(DESKTOP_DEB) build/desktop_kernel_unpacked
+build/kernel_unpacked/boot: $(DEB)
+	mkdir -p build/kernel_unpacked
+	dpkg -x $(DEB) build/kernel_unpacked
 
 # Installer initrd
 
@@ -92,15 +83,14 @@ build/initrd.gz: build/installer_root
 	cd build/installer_root && find . | fakeroot cpio -H newc -o | gzip -c > ../initrd.gz
 
 # Installer root directory, used as contents of the initrd
-build/installer_root: src/vexpress-initrd.gz uboot/u-boot.imx src/19install_gk802_components $(DESKTOP_DEB) $(HEADLESS_DEB) src/install_kernel.sh src/ubootcmd.src build/desktop_kernel_unpacked/lib/modules
+build/installer_root: src/vexpress-initrd.gz uboot/u-boot.imx src/finish-install.d/* src/base-installer.d/* $(DEB) src/install_kernel_uboot.sh src/ubootcmd.src build/kernel_unpacked/lib/modules
 	mkdir -p $@
 	cd $@ && zcat ../../src/vexpress-initrd.gz | fakeroot cpio -id
 	rm -rf $@/lib/modules/*
-	cp -r build/desktop_kernel_unpacked/lib/modules/* $@/lib/modules
+	fakeroot cp -a build/kernel_unpacked/lib/modules/* $@/lib/modules
 	mkdir -p $@/gk802_components
-	cp uboot/u-boot.imx $(DESKTOP_DEB) $(HEADLESS_DEB) src/install_kernel.sh src/ubootcmd.src $@/gk802_components
-	chmod +x $@/gk802_components/install_kernel.sh
-	cp src/19install_gk802_components $@/usr/lib/finish-install.d/
-	chmod +x $@/usr/lib/finish-install.d/19install_gk802_components
+	fakeroot cp -a uboot/u-boot.imx $(DEB) src/install_kernel_uboot.sh src/ubootcmd.src $@/gk802_components
+	fakeroot cp -a src/finish-install.d/* $@/usr/lib/finish-install.d/
+	fakeroot cp -a src/base-installer.d/* $@/usr/lib/base-installer.d/
 	touch build/installer_root
 

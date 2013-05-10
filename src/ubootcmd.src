@@ -9,8 +9,8 @@ setenv initaddr 0x12008000;
 # increase this number if your initrd gets bigger than 48Mb(!)
 setenv initrdsz 0x03000000;
 
-# Set correct boot parameters (@ signs get processed by slipstream_kernel.sh script)
-setenv bootargs 'root=@ROOTDEV@ rw @CONSOLE@'
+# Set correct boot parameters (@ signs get processed by install_kernel.sh script)
+setenv bootargs 'root=@ROOTDEV@ rw console=tty0 console=ttymxc3,115200'
 
 setenv tryboot 'if ext2load mmc ${mmcdev} ${loadaddr} ${path}/zImage${bootsuffix}; then
        if ext2load mmc ${mmcdev} ${initaddr} ${path}/initrd${bootsuffix}; then
@@ -26,5 +26,4 @@ run trypaths;
 
 setenv mmcdev 0;
 run trypaths;
-
 

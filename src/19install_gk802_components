@@ -1,9 +1,0 @@
-#!/bin/sh
-cp -ra /gk802_components /target/
-mount --bind /proc /target/proc
-chroot /target /gk802_components/install_kernel.sh > /target/var/log/gk802_install_custom_components.log 2>&1
-umount /target/proc
-rm -rf /target/gk802_components
-rm -rf /gk802_components
-
-
