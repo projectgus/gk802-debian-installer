@@ -56,6 +56,8 @@ $(DEB): src/config-server
 #
 build/partition.img: build/installer_zImage build/uInitRdInstaller src/ubootcmd_installer.src
 	dd if=/dev/zero of=build/partition.img bs=512 count=96256
+	-@sudo umount build/mount-temp
+	-@sudo losetup -d /dev/loop0
 	sudo losetup /dev/loop0 build/partition.img
 	sudo mkfs.ext2 /dev/loop0
 	mkdir -p build/mount-temp
@@ -63,6 +65,7 @@ build/partition.img: build/installer_zImage build/uInitRdInstaller src/ubootcmd_
 	sudo cp build/installer_zImage build/mount-temp/zImage
 	sudo cp build/uInitRdInstaller build/mount-temp/
 	sudo mkimage -T script -C none -n "GK802 Debian installer" -d src/ubootcmd_installer.src build/mount-temp/ubootcmd
+	sleep 1
 	sudo umount build/mount-temp
 	sudo losetup -d /dev/loop0
 
