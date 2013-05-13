@@ -18,9 +18,9 @@ cd /gk802_components
 # Set up boot arguments with correct root UUID, generate ubootcmd
 ROOTDEV=`/bin/grep -v '^#' /etc/fstab | /bin/grep ' / ' | /usr/bin/cut -d' ' -f1`
 
-sed s/@ROOTDEV@/${ROOTDEV}/ ubootcmd.src > ubootcmd.src.out
+sed "s%@ROOTDEV@%${ROOTDEV}%" ubootcmd.src > /boot/ubootcmd.src
 
-/usr/bin/mkimage -T script -C none -n "Debian GK802 boot script" -d ubootcmd.src.out /boot/ubootcmd
+/usr/bin/mkimage -T script -C none -n "Debian GK802 boot script" -d /boot/ubootcmd.src /boot/ubootcmd
 
 cd /boot
 ln -s vmlinuz* zImage
