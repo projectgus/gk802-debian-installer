@@ -11,7 +11,7 @@ else
 fi;
 
 setenv initaddr 0x12008000;
-ext2load mmc ${mmcdev} ${loadaddr} /zImage;
-ext2load mmc ${mmcdev} ${initaddr} /uInitRdInstaller;
+ext2load ${dtype} ${dev} ${mmcdev} ${loadaddr} /zImageInstaller;
+ext2load ${dtype} ${dev} ${initaddr} /uInitRdInstaller;
 bootz ${loadaddr} ${initaddr}
 

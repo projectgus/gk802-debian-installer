@@ -18,8 +18,8 @@ else
    setenv bootargs ${bootargs}' console=ttymxc3,115200 console=tty0';
 fi;
 
-setenv tryboot 'if ext2load mmc ${mmcdev} ${loadaddr} ${path}/zImage${bootsuffix}; then
-       if ext2load mmc ${mmcdev} ${initaddr} ${path}/initrd${bootsuffix}; then
+setenv tryboot 'if ext2load ${dtype} ${dev} ${loadaddr} ${path}/zImage${bootsuffix}; then
+       if ext2load ${dtype} ${dev} ${initaddr} ${path}/initrd${bootsuffix}; then
            bootz ${loadaddr} ${initaddr}:${initrdsz};
        fi;
    fi;';
@@ -27,9 +27,30 @@ setenv tryboot 'if ext2load mmc ${mmcdev} ${loadaddr} ${path}/zImage${bootsuffix
 # If partition is dedicated boot partition then files will be in root, otherwise in /boot
 setenv trypaths 'setenv path /boot; run tryboot; setenv path ''; run tryboot;'
 
-setenv mmcdev 1;
+setenv dtype mmc
+setenv dev 1;
 run trypaths;
 
-setenv mmcdev 0;
+setenv dev 0;
 run trypaths;
 
+# Switch to USB mass storage. Try up to 5(!) devices to see if we can find one.
+usb start
+setenv dtype usb
+setenv dev 0
+run trypaths
+
+setenv dev 1
+run trypaths
+
+setenv dev 2
+run trypaths
+
+setenv dev 3
+run trypaths
+
+setenv dev 4
+run trypaths
+
+setenv dev 5
+run trypaths
