@@ -1,2 +1,2 @@
 unit: sectors
-installer.img1 : start=     2048, size=    96256, Id=83
+installer.img1 : start=     2048, size=    , Id=83
