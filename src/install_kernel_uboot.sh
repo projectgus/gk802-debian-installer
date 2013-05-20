@@ -20,7 +20,8 @@ ROOTDEV=`/bin/grep -v '^#' /etc/fstab | /bin/grep ' / ' | /usr/bin/cut -d' ' -f1
 
 sed "s%@ROOTDEV@%${ROOTDEV}%" ubootcmd.src > /boot/ubootcmd.src
 
-/usr/bin/mkimage -T script -C none -n "Debian GK802 boot script" -d /boot/ubootcmd.src /boot/ubootcmd
+cp update_ubootcmd.sh /boot
+/boot/update_ubootcmd.sh
 
 cd /boot
 ln -s vmlinuz* zImage

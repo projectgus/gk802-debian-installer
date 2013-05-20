@@ -86,13 +86,13 @@ build/initrd.gz: build/installer_root
 	cd build/installer_root && find . | fakeroot cpio -H newc -o | gzip -c > ../initrd.gz
 
 # Installer root directory, used as contents of the initrd
-build/installer_root: src/vexpress-initrd.gz uboot/u-boot.imx src/finish-install.d/* src/base-installer.d/* $(DEB) src/install_kernel_uboot.sh src/ubootcmd.src build/kernel_unpacked/lib/modules src/preseed.cfg
+build/installer_root: src/vexpress-initrd.gz uboot/u-boot.imx src/finish-install.d/* src/base-installer.d/* $(DEB) src/install_kernel_uboot.sh src/ubootcmd.src build/kernel_unpacked/lib/modules src/preseed.cfg src/update_ubootcmd.sh
 	mkdir -p $@
 	cd $@ && zcat ../../src/vexpress-initrd.gz | fakeroot cpio -id
 	rm -rf $@/lib/modules/*
 	fakeroot cp -a build/kernel_unpacked/lib/modules/* $@/lib/modules
 	mkdir -p $@/gk802_components
-	fakeroot cp -a uboot/u-boot.imx $(DEB) src/install_kernel_uboot.sh src/ubootcmd.src $@/gk802_components
+	fakeroot cp -a uboot/u-boot.imx $(DEB) src/install_kernel_uboot.sh src/ubootcmd.src src/update_ubootcmd.sh $@/gk802_components
 	fakeroot cp -a src/finish-install.d/* $@/usr/lib/finish-install.d/
 	fakeroot cp -a src/base-installer.d/* $@/usr/lib/base-installer.d/
 	fakeroot cp -a src/preseed.cfg $@/
