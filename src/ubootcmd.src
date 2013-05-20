@@ -9,8 +9,14 @@ setenv initaddr 0x12008000;
 # increase this number if your initrd gets bigger than 48Mb(!)
 setenv initrdsz 0x03000000;
 
-# Set correct boot parameters (@ signs get processed by install_kernel_boot.sh script)
-setenv bootargs 'root=@ROOTDEV@ rw console=tty0 console=ttymxc3,115200'
+# (@ signs get for ROOTDEV processed by install_kernel_boot.sh script)
+setenv bootargs 'root=@ROOTDEV@ rw';
+# Recovery mode boots with interactive (early boot initrd) console on serial port, non-recovery interactive on hdmi output
+if test ${recovery} -gt 0; then
+   setenv bootargs ${bootargs}' console=tty0 console=ttymxc3,115200';
+else
+   setenv bootargs ${bootargs}' console=ttymxc3,115200 console=tty0';
+fi;
 
 setenv tryboot 'if ext2load mmc ${mmcdev} ${loadaddr} ${path}/zImage${bootsuffix}; then
        if ext2load mmc ${mmcdev} ${initaddr} ${path}/initrd${bootsuffix}; then
