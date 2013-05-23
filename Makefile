@@ -9,7 +9,7 @@ KERNELREV := $(shell cd kernel; git rev-parse --verify --short HEAD)
 # kernel version, ie 3.x.x - usually KERNELREV and KERNELVER are taken together as the revision string, but that is config-dependent...
 KERNELVER := $(shell cd kernel; make kernelversion)
 # Debian kernel revision, increment the final number to add a new revision (this may be a bad way to do this!)
-DEBIAN_REVISION := 1
+DEBIAN_REVISION := 2
 
 # $(1) argument is either 'desktop' or 'headless'
 DEB = linux-image-$(KERNELVER)-$(KERNELREV)-gk802_$(KERNELVER).$(DEBIAN_REVISION)_armhf.deb
