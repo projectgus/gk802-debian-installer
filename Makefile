@@ -1,4 +1,4 @@
-.PHONY : clean all 
+.PHONY : clean all zips
 
 export ARCH=arm
 export CROSS_COMPILE?=arm-linux-gnueabi-
@@ -21,6 +21,10 @@ IMG=gk802_debian_installer.img
 MAKE_KPKG=CONCURRENCY_LEVEL=4 DEB_HOST_ARCH=armhf fakeroot make-kpkg --arch arm --subarch gk802 --initrd --cross-compile arm-linux-gnueabihf- --revision "$(KERNELVER).$(DEBIAN_REVISION)" --append-to-version $(APPEND_TO_VERSION)
 
 all: $(IMG)
+
+zips: $(IMG)
+	zip gk802_debian_installer.zip $(IMG)
+	gzip -c $(IMG) > gk802_debian_installer.img.gz
 
 clean:
 	rm -rf build/* $(IMG) *.deb
