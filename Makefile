@@ -12,14 +12,13 @@ KERNELVER := $(shell cd kernel; make kernelversion)
 DEBIAN_REVISION := 2
 
 # $(1) argument is either 'desktop' or 'headless'
-DEB = linux-image-$(KERNELVER)-$(KERNELREV)-gk802_$(KERNELVER).$(DEBIAN_REVISION)_armhf.deb
-APPEND_TO_VERSION = "-$(KERNELREV)-gk802"
-VMLINUZ = vmlinuz-$(KERNELVER)-$(KERNELREV)-gk802
+APPEND_TO_VERSION = "-$(KERNELREV)-$(DEBIAN_REVISION)-gk802"
+DEB = linux-image-$(KERNELVER)$(APPEND_TO_VERSION)_$(KERNELVER).$(DEBIAN_REVISION)_armhf.deb
+VMLINUZ = vmlinuz-$(KERNELVER)$(APPEND_TO_VERSION)
 
 # Internal environment variables
 IMG=gk802_debian_installer.img
-
-MAKE_KPKG=CONCURRENCY_LEVEL=4 DEB_HOST_ARCH=armhf fakeroot make-kpkg --arch arm --subarch gk802 --initrd --cross-compile arm-linux-gnueabihf- --revision $(KERNELVER).$(DEBIAN_REVISION)
+MAKE_KPKG=CONCURRENCY_LEVEL=4 DEB_HOST_ARCH=armhf fakeroot make-kpkg --arch arm --subarch gk802 --initrd --cross-compile arm-linux-gnueabihf- --revision "$(KERNELVER).$(DEBIAN_REVISION)" --append-to-version $(APPEND_TO_VERSION)
 
 all: $(IMG)
 
@@ -42,7 +41,7 @@ uboot/include/config.h:
 $(DEB): src/config-server
 	cp src/config-server kernel/.config
 	cd kernel && make oldconfig
-	cd kernel && $(MAKE_KPKG) --append-to-version $(APPEND_TO_VERSION) kernel_image
+	cd kernel && $(MAKE_KPKG) kernel_image
 
 
 # Installer initrd
